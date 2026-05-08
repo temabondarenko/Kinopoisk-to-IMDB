@@ -70,7 +70,7 @@ If no token is provided, the tool falls back to OMDb (requires your own key from
 
 Open your Kinopoisk profile. The URL looks like `https://www.kinopoisk.ru/user/12345678/` — you need the numeric ID.
 
-## Bypassing Blocks (Ukraine / Commercial VPNs)
+## Bypassing Blocks (Commercial VPNs)
 
 Yandex detects and blocks IPs from most public VPNs (Surfshark, Nord, Mullvad, etc.). Here are working alternatives:
 
