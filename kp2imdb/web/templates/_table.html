@@ -1,0 +1,55 @@
+{% if rows %}
+<div class="table-meta">
+    <strong>{{ name }}</strong> — всего {{ total }}{% if truncated %} (показаны первые 500){% endif %}
+    <input type="text" placeholder="Фильтр по названию..." class="table-filter" oninput="filterTable(this)">
+</div>
+<div class="table-wrap">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>RU</th>
+                <th>EN</th>
+                <th>Год</th>
+                <th>Рейтинг</th>
+                <th>Дата</th>
+                <th>IMDB</th>
+                <th>KP</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in rows %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ r.title_ru or "" }}</td>
+                <td class="muted">{{ r.title_en or "" }}</td>
+                <td>{{ r.year or "" }}</td>
+                <td>{% if r.user_rating %}<span class="badge rating">{{ r.user_rating }}</span>{% endif %}</td>
+                <td class="muted small">{{ r.date_rated or "" }}</td>
+                <td>
+                    {% if r.imdb_id %}
+                    <a href="https://www.imdb.com/title/{{ r.imdb_id }}/" target="_blank" rel="noopener">{{ r.imdb_id }}</a>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if r.url %}
+                    <a href="{{ r.url }}" target="_blank" rel="noopener" class="muted">{{ r.kinopoisk_id }}</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<script>
+    function filterTable(input) {
+        const q = input.value.toLowerCase().trim();
+        const rows = input.closest('.card').querySelectorAll('.data-table tbody tr');
+        rows.forEach(function (row) {
+            row.style.display = q === "" || row.textContent.toLowerCase().includes(q) ? "" : "none";
+        });
+    }
+</script>
+{% else %}
+<div class="empty">Пусто — сначала запусти нужный этап.</div>
+{% endif %}

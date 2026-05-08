@@ -1,0 +1,82 @@
+<div class="card status-card">
+    <h2>Статус</h2>
+
+    <div class="status-grid">
+        <div class="pill {{ 'ok' if status.kp_user_id_set else 'bad' }}">
+            <span class="dot"></span>
+            <span>KP_USER_ID</span>
+        </div>
+        <div class="pill {{ 'ok' if status.proxy_set else 'warn' }}">
+            <span class="dot"></span>
+            <span>proxy {% if not status.proxy_set %}(без прокси){% endif %}</span>
+        </div>
+        <div class="pill {{ 'ok' if status.logged_in or status.public_mode else 'bad' }}">
+            <span class="dot"></span>
+            <span>
+                {% if status.public_mode %}public mode{% elif status.logged_in %}logged in{% else %}no session{% endif %}
+            </span>
+        </div>
+        <div class="pill {{ 'ok' if status.kp_dev_set else 'warn' }}">
+            <span class="dot"></span>
+            <span>kinopoisk.dev{% if not status.kp_dev_set %} нет{% endif %}</span>
+        </div>
+    </div>
+
+    <div class="counters">
+        <div class="counter">
+            <span class="counter-value">{{ status.counts.votes }}</span>
+            <span class="counter-label">оценок</span>
+        </div>
+        <div class="counter">
+            <span class="counter-value">{{ status.counts.watchlist }}</span>
+            <span class="counter-label">в watchlist</span>
+        </div>
+        <div class="counter">
+            <span class="counter-value">{{ status.counts.votes_matched + status.counts.watchlist_matched }}</span>
+            <span class="counter-label">сопоставлено</span>
+        </div>
+        <div class="counter">
+            <span class="counter-value {{ 'warn' if status.counts.unmatched else '' }}">{{ status.counts.unmatched }}</span>
+            <span class="counter-label">не найдено</span>
+        </div>
+        <div class="counter">
+            <span class="counter-value">{{ status.counts.cache }}</span>
+            <span class="counter-label">в кэше</span>
+        </div>
+    </div>
+
+    <div class="task-state {{ 'running' if status.task.running else '' }}">
+        {% if status.task.running %}
+            <span class="spinner"></span>
+            <span>Выполняется: <code>{{ status.task.name }}</code></span>
+            {% if status.task.waiting_for_input %}
+                <form hx-post="/input/enter" hx-swap="none" style="display:inline">
+                    <button type="submit" class="btn primary small pulsing">
+                        ✅ Готово, я залогинился (отправить Enter)
+                    </button>
+                </form>
+            {% endif %}
+        {% else %}
+            <span>Ожидание.
+                {% if status.task.exit_code is not none %}
+                    Последняя задача: <code>{{ status.task.name }}</code>,
+                    exit code
+                    <code class="{{ 'ok' if status.task.exit_code == 0 else 'bad' }}">{{ status.task.exit_code }}</code>
+                {% endif %}
+            </span>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card log-card">
+    <h2>Лог <span class="muted">({{ logs|length }} строк)</span></h2>
+    <pre class="log" id="log-pre">{% for line in logs %}{{ line.text }}
+{% endfor %}</pre>
+</div>
+
+<script>
+    (function () {
+        const pre = document.getElementById('log-pre');
+        if (pre) pre.scrollTop = pre.scrollHeight;
+    })();
+</script>

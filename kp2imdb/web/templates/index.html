@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="col col-left">
+    <div class="card">
+        <h2>Настройки</h2>
+        <form method="post" action="/settings" class="env-form">
+            {% for key, label, placeholder, type in env_fields %}
+            <label class="field">
+                <span class="field-label">{{ label }}</span>
+                {% if type == "checkbox" %}
+                <input type="checkbox" name="{{ key }}" {% if env_values[key] in ("true", "1", "yes", "on") %}checked{% endif %}>
+                <code class="field-key">{{ key }}</code>
+                {% else %}
+                <input
+                    type="{{ type }}"
+                    name="{{ key }}"
+                    value="{{ env_values[key] }}"
+                    placeholder="{{ placeholder }}"
+                    autocomplete="off"
+                    spellcheck="false"
+                >
+                <code class="field-key">{{ key }}</code>
+                {% endif %}
+            </label>
+            {% endfor %}
+            <div class="form-actions">
+                <button type="submit" class="btn primary">Сохранить .env</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>Действия</h2>
+        <p class="hint">Одна задача за раз. Логин открывает отдельное окно Chromium — войди там и потом жми «Готово, я залогинился».</p>
+        <div class="actions">
+            <button
+                class="btn action"
+                hx-post="/run/login"
+                hx-swap="none"
+                title="Открыть Chromium для ручного логина в Кинопоиск"
+            >1. Login</button>
+            <button
+                class="btn action"
+                hx-post="/run/scrape"
+                hx-swap="none"
+                title="Спарсить все оценки и watchlist"
+            >2. Scrape</button>
+            <button
+                class="btn action"
+                hx-post="/run/match"
+                hx-swap="none"
+                title="Сопоставить Kinopoisk ID с IMDB ID через kinopoisk.dev"
+            >3. Match</button>
+            <button
+                class="btn action"
+                hx-post="/run/export"
+                hx-swap="none"
+                title="Сгенерировать CSV для импорта в IMDB"
+            >4. Export CSV</button>
+            <button
+                class="btn action primary"
+                hx-post="/run/all"
+                hx-swap="none"
+                title="scrape → match → export одним махом"
+            >▶ All</button>
+            <button
+                class="btn action danger"
+                hx-post="/kill"
+                hx-swap="none"
+                title="Прибить текущую задачу"
+            >■ Stop</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Скачать</h2>
+        <div class="downloads">
+            <a href="/download/ratings" class="btn link">⬇ ratings.csv</a>
+            <a href="/download/watchlist" class="btn link">⬇ watchlist.csv</a>
+            <a href="/download/unmatched" class="btn link ghost">⬇ unmatched.json</a>
+            <a href="/download/votes_raw" class="btn link ghost">⬇ votes.json (raw)</a>
+            <a href="/download/watchlist_raw" class="btn link ghost">⬇ watchlist.json (raw)</a>
+        </div>
+    </div>
+</section>
+
+<section class="col col-right">
+    <div id="panel" hx-get="/partials/panel" hx-trigger="load, every 1s" hx-swap="innerHTML">
+        {% include "_panel.html" %}
+    </div>
+
+    <div class="card">
+        <h2>Данные</h2>
+        <p class="hint">Таблицы подгружаются по клику. Показываем первые 500 строк.</p>
+        <div class="tabs">
+            {% for key, label in [
+                ("votes", "Оценки"),
+                ("watchlist", "Watchlist"),
+                ("matched_votes", "Matched (оценки)"),
+                ("matched_watchlist", "Matched (watchlist)"),
+                ("unmatched", "Не найдено в IMDB"),
+            ] %}
+            <button
+                class="btn ghost"
+                hx-get="/partials/data/{{ key }}"
+                hx-target="#data-pane"
+                hx-swap="innerHTML"
+            >{{ label }}</button>
+            {% endfor %}
+        </div>
+        <div id="data-pane" class="data-pane">
+            <div class="empty">Выбери раздел выше, чтобы увидеть таблицу.</div>
+        </div>
+    </div>
+</section>
+{% endblock %}
